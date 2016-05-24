@@ -9,5 +9,11 @@
             "email": "fabien@meurillon.org"
         }
     ],
-    "require": {}
+    "require": {},
+    "autoload": {
+        "psr-4": {"FabienM\\TransactionManager\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"FabienM\\TransactionManager\\": "tests/"}
+    }
 }
