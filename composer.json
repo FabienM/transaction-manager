@@ -1,0 +1,13 @@
+{
+    "name": "fabienm/transaction-manager",
+    "description": "Transaction Manager implementation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Meurillon",
+            "email": "fabien@meurillon.org"
+        }
+    ],
+    "require": {}
+}
