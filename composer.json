@@ -12,6 +12,10 @@
     "require": {
         "psr/log": "1.0.0"
     },
+    "require-dev": {
+        "doctrine/orm": "~2.4",
+        "monolog/monolog": "~1.11"
+    },
     "autoload": {
         "psr-4": {"FabienM\\TransactionManager\\": "src/"}
     },
