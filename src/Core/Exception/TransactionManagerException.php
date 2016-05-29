@@ -2,7 +2,7 @@
 
 namespace FabienM\TransactionManager\Core\Exception;
 
-class TransactionManagerException extends \Exception
+class TransactionManagerException extends \RuntimeException
 {
 
 }

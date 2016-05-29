@@ -2,6 +2,8 @@
 
 namespace FabienM\TransactionManager\Core;
 
+use Psr\Log\LoggerInterface;
+
 /**
  * Proxy class to manage transactional methods
  * @author Fabien Meurillon <fabien@meurillon.org>
@@ -26,23 +28,29 @@ class Proxy
     /** @var bool */
     private $rollbackOnError;
 
+    /** @var LoggerInterface */
+    private $logger = null;
+
     /**
      * Proxy constructor.
      * @param object $service
      * @param bool $transactionalMethods
      * @param TransactionManagerInterface $transactionManager
      * @param bool $rollbackOnError
+     * @param LoggerInterface $logger
      */
     public function __construct(
         $service,
         $transactionalMethods,
         TransactionManagerInterface $transactionManager,
-        $rollbackOnError
+        $rollbackOnError,
+        LoggerInterface $logger = null
     ) {
         $this->service = $service;
         $this->transactionalMethods = $transactionalMethods;
         $this->transactionManager = $transactionManager;
         $this->rollbackOnError = $rollbackOnError;
+        $this->logger = $logger;
     }
 
     public function __call($name, $arguments)
@@ -54,10 +62,26 @@ class Proxy
         try {
             return call_user_func_array(array($this->service, $name), $arguments);
         } catch (\Exception $e) {
-            if ($this->rollbackOnError) {
+            $this->handleException($e);
+        }
+        $this->transactionManager->commit();
+    }
+
+    /**
+     * @param \Exception $exception
+     * @throws \Exception
+     */
+    protected function handleException(\Exception $exception)
+    {
+        if ($this->rollbackOnError) {
+            if ($this->logger !== null) {
+                $this->logger->info(
+                    "Caught {exception} and rollbackOnError is enabled. Rolling back.",
+                    array('exception', get_class($exception))
+                );
                 $this->transactionManager->rollback();
             }
         }
-        $this->transactionManager->commit();
+        throw $exception;
     }
 }
