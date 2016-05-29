@@ -21,23 +21,28 @@ class DoctrineORMTransactionManager extends DoctrineBALTransactionManager
     /**
      * DoctrineTransactionManager constructor.
      * @param EntityManagerInterface $entityManager
+     * @param bool $nestWithSavepoints
      * @param bool $clearOnClose true if entityManager should be cleared after transaction ends
      * @param LoggerInterface $logger
      */
-    public function __construct(EntityManagerInterface $entityManager, $clearOnClose, LoggerInterface $logger = null)
-    {
-        parent::__construct($entityManager->getConnection(), $logger);
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        $nestWithSavepoints,
+        $clearOnClose,
+        LoggerInterface $logger = null
+    ) {
+        parent::__construct($entityManager->getConnection(), $nestWithSavepoints, $logger);
         $this->entityManager = $entityManager;
         $this->clearOnClose = $clearOnClose;
-        $this->entityManager->getConnection()->setNestTransactionsWithSavepoints(true);
     }
 
     public function commit()
     {
         $this->entityManager->flush();
+        $this->logger->debug("EntityManager flushed");
         parent::commit();
         if ($this->clearOnClose) {
-            $this->entityManager->clear();
+            $this->clear();
         }
     }
 
@@ -45,7 +50,13 @@ class DoctrineORMTransactionManager extends DoctrineBALTransactionManager
     {
         parent::rollback();
         if ($this->clearOnClose) {
-            $this->entityManager->clear();
+            $this->clear();
         }
+    }
+
+    private function clear()
+    {
+        $this->entityManager->clear();
+        $this->logger->debug("EntityManager cleared");
     }
 }

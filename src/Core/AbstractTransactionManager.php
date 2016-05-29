@@ -2,23 +2,33 @@
 
 namespace FabienM\TransactionManager\Core;
 
+use FabienM\TransactionManager\Core\Exception\UnsupportedMethodException;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 abstract class AbstractTransactionManager implements TransactionManagerInterface
 {
+    /** @var bool */
+    protected $nestWithSavepoints;
+
     /** @var LoggerInterface */
     protected $logger;
 
     /** @var bool */
     protected $readOnly;
 
+    /** @var int */
+    protected $transactionDepth;
+
     /**
      * AbstractTransactionManager constructor.
      * @param LoggerInterface $logger
+     * @param bool $nestWithSavepoints
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct($nestWithSavepoints, LoggerInterface $logger = null)
     {
-        $this->logger = $logger;
+        $this->logger = ($logger !== null ? $logger : new NullLogger());
+        $this->nestWithSavepoints = $nestWithSavepoints;
     }
 
     public function commit()
@@ -34,21 +44,54 @@ abstract class AbstractTransactionManager implements TransactionManagerInterface
 
     public function rollback()
     {
-        $this->doRollback();
+        if (!$this->nestWithSavepoints || $this->transactionDepth === 0) {
+            $this->doRollback();
+            return;
+        }
+        $this->doRollback($this->getCurrentSavepoint());
+        $this->transactionDepth--;
     }
 
     public function start($readOnly)
     {
-        if ($this->logger !== null) {
-            $this->logger->debug("Attempt to commit a readonly transaction. Rollbacking.");
-        }
         $this->readOnly = $readOnly;
-        $this->doStart();
+        if (!$this->nestWithSavepoints) {
+            $this->doStart();
+            return;
+        }
+        if ($this->nestWithSavepoints && ++$this->transactionDepth > 0) {
+            $this->doSavepoint($this->getCurrentSavepoint());
+            return;
+        }
     }
 
     abstract protected function doCommit();
 
-    abstract protected function doRollback();
+    /**
+     * Rollback to the given savepoint or the whole transaction if null given
+     *
+     * @param string $savepoint the targeted savepoint
+     */
+    abstract protected function doRollback($savepoint = null);
 
     abstract protected function doStart();
+
+    /**
+     * Create a savepoint with the given name
+     *
+     * @param string $savepoint Savepoint name
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function doSavepoint($savepoint)
+    {
+        throw new UnsupportedMethodException("Savepoints are not supported by this transaction manager");
+    }
+
+    /**
+     * @return string
+     */
+    private function getCurrentSavepoint()
+    {
+        return sprintf("TM_SAVEPOINT_%d", $this->transactionDepth);
+    }
 }

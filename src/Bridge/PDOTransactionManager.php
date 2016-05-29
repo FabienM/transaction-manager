@@ -2,43 +2,45 @@
 
 namespace FabienM\TransactionManager\Bridge;
 
-use Doctrine\DBAL\Connection;
 use FabienM\TransactionManager\Core\AbstractTransactionManager;
 use Psr\Log\LoggerInterface;
 
-class DoctrineBALTransactionManager extends AbstractTransactionManager
+class PDOTransactionManager extends AbstractTransactionManager
 {
-    /** @var Connection */
+    /** @var \PDO */
     private $connection;
 
     /**
      * DoctrineBALTransactionManager constructor.
-     * @param Connection $connection
-     * @param bool $nestWithSavepoints
+     * @param \PDO $connection
      * @param LoggerInterface $logger
      */
-    public function __construct(Connection $connection, $nestWithSavepoints, LoggerInterface $logger = null)
+    public function __construct(\PDO $connection, LoggerInterface $logger = null)
     {
-        parent::__construct(false, $logger);
+        parent::__construct($logger);
         $this->connection = $connection;
-        $this->connection->setNestTransactionsWithSavepoints($nestWithSavepoints);
     }
+
     protected function doCommit()
     {
         $this->connection->commit();
     }
 
-    /**
-     * @param string $savepoint
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
     protected function doRollback($savepoint = null)
     {
+        if ($savepoint !== null) {
+            $this->connection->exec(sprintf("ROLLBACK TO %s", $savepoint));
+        }
         $this->connection->rollBack();
     }
 
     protected function doStart()
     {
         $this->connection->beginTransaction();
+    }
+
+    protected function doSavepoint($savepoint)
+    {
+        $this->connection->exec(sprintf("SAVEPOINT %s", $savepoint));
     }
 }
