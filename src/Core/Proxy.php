@@ -5,7 +5,8 @@ namespace FabienM\TransactionManager\Core;
 use Psr\Log\LoggerInterface;
 
 /**
- * Proxy class to manage transactional methods
+ * Proxy class to manage transactional methods in a nested service.
+ *
  * @author Fabien Meurillon <fabien@meurillon.org>
  */
 class Proxy

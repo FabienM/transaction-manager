@@ -5,6 +5,11 @@ namespace FabienM\TransactionManager\Bridge;
 use FabienM\TransactionManager\Core\AbstractTransactionManager;
 use Psr\Log\LoggerInterface;
 
+/**
+ * This class is a Transaction Manager for native PDO.
+ *
+ * @author Fabien Meurillon <fabien@meurillon.org>
+ */
 class PDOTransactionManager extends AbstractTransactionManager
 {
     /** @var \PDO */

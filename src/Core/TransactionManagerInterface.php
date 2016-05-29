@@ -4,6 +4,11 @@ namespace FabienM\TransactionManager\Core;
 
 use FabienM\TransactionManager\Core\Exception\UnsupportedMethodException;
 
+/**
+ * Interface TransactionManagerInterface
+ *
+ * @author Fabien Meurillon <fabien@meurillon.org>
+ */
 interface TransactionManagerInterface
 {
     /**

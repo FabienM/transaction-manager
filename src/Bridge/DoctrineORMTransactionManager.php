@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
  *
  * @author Fabien Meurillon <fabien@meurillon.org>
  */
-class DoctrineORMTransactionManager extends DoctrineBALTransactionManager
+class DoctrineORMTransactionManager extends DoctrineDBALTransactionManager
 {
     /** @var EntityManagerInterface */
     private $entityManager;

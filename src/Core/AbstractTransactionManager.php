@@ -6,6 +6,11 @@ use FabienM\TransactionManager\Core\Exception\UnsupportedMethodException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
+/**
+ * Class AbstractTransactionManager
+ *
+ * @author Fabien Meurillon <fabien@meurillon.org>
+ */
 abstract class AbstractTransactionManager implements TransactionManagerInterface
 {
     /** @var bool */

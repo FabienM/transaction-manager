@@ -6,7 +6,12 @@ use Doctrine\DBAL\Connection;
 use FabienM\TransactionManager\Core\AbstractTransactionManager;
 use Psr\Log\LoggerInterface;
 
-class DoctrineBALTransactionManager extends AbstractTransactionManager
+/**
+ * This class is a Transaction Manager for Doctrine DataBase Abstraction Layer.
+ *
+ * @author Fabien Meurillon <fabien@meurillon.org>
+ */
+class DoctrineDBALTransactionManager extends AbstractTransactionManager
 {
     /** @var Connection */
     private $connection;
@@ -23,6 +28,7 @@ class DoctrineBALTransactionManager extends AbstractTransactionManager
         $this->connection = $connection;
         $this->connection->setNestTransactionsWithSavepoints($nestWithSavepoints);
     }
+
     protected function doCommit()
     {
         $this->connection->commit();
