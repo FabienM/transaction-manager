@@ -35,7 +35,7 @@ class Proxy
     /**
      * Proxy constructor.
      * @param object $service
-     * @param bool $transactionalMethods
+     * @param bool[string] $transactionalMethods
      * @param TransactionManagerInterface $transactionManager
      * @param bool $rollbackOnError
      * @param LoggerInterface $logger
@@ -61,11 +61,12 @@ class Proxy
         }
         $this->transactionManager->start($this->transactionalMethods[$name]);
         try {
-            return call_user_func_array(array($this->service, $name), $arguments);
+            $return = call_user_func_array(array($this->service, $name), $arguments);
         } catch (\Exception $e) {
             $this->handleException($e);
         }
         $this->transactionManager->commit();
+        return $return;
     }
 
     /**
@@ -78,7 +79,7 @@ class Proxy
             if ($this->logger !== null) {
                 $this->logger->info(
                     "Caught {exception} and rollbackOnError is enabled. Rolling back.",
-                    array('exception', get_class($exception))
+                    ['exception' => get_class($exception)]
                 );
                 $this->transactionManager->rollback();
             }
